@@ -204,11 +204,9 @@
 
 |名称|全称|类型|`加密长度`|加密/工作模式/填充模式|签名算法|使用场景|典型案例|
 |---|---|---|---|---|---|---|---|
-|RSA|3人名缩写|非对称加密|~~
-1024~~<br>2048|- RSA/ECB/PKCS1Padding<br>[RSA/ECB/OAEPWithSHA-1AndMGF1Padding](https://juejin.cn/post/7030953914509836296) <br>RSA/ECB/OAEPWithSHA-256AndMGF1Padding|SHA512WITHRSA<br>SHA256WITHRSA<br>...|加密效率较低，一般不用作加密<br>用做签名|HTTPS证书<br>JwtToken签名|
+|RSA|3人名缩写|非对称加密|~~1024~~<br>2048|- RSA/ECB/PKCS1Padding<br>[RSA/ECB/OAEPWithSHA-1AndMGF1Padding](https://juejin.cn/post/7030953914509836296) <br>RSA/ECB/OAEPWithSHA-256AndMGF1Padding|SHA512WITHRSA<br>SHA256WITHRSA<br>...|加密效率较低，一般不用作加密<br>用做签名|HTTPS证书<br>JwtToken签名|
 |SM2|SM2椭圆曲线公钥密码算法|非对称加密|256|-|SM3WithSM2|安全性优于RSA 2048，可用于替代RSA<br>用做签名|国产HTTPS证书<br>国产加密机|
-|AES|Advanced Encryption Standard|对称加密|~~128~~<br>~~
-192~~<br>256|AES/CBC/NoPadding<br>AES/CBC/PKCS5Padding<br>AES/ECB/PKCS5Padding<br>AES/CTR/NoPadding|-|加密效率高，当下只有256位是安全的<br>通常使用CBC/CTR模式加密|各种数据加密|
+|AES|Advanced Encryption Standard|对称加密|~~128~~<br>~~192~~<br>256|AES/CBC/NoPadding<br>AES/CBC/PKCS5Padding<br>AES/ECB/PKCS5Padding<br>AES/CTR/NoPadding|-|加密效率高，当下只有256位是安全的<br>通常使用CBC/CTR模式加密|各种数据加密|
 |SM4|SM4分组密码算法|对称加密|128<br>|SM4/CBC/PKCS5Padding<br>SM4/CTR/NoPadding|-|安全性优于AES 256，可用于替换AES<br>通常使用CBC/CTR模式加密|各种数据加密|
 |3DES|Triple Data Encryption Algorithm|对称加密|192<br>|DESede/CBC/NoPadding<br>DESede/CBC/PKCS5Padding<br>DESede/ECB/PKCS5Padding|-|安全性较差，建议使用AES/SM4来替代|各种数据加密|
 |SHA-1|Secure Hash Algorithm 1|摘要算法|160<br>|-|-|- 用于内容防篡改|各种报文/下载文件的完整性校验|
