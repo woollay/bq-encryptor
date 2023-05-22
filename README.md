@@ -1,26 +1,27 @@
 # bq-encryptor加解密组件说明
-
-- 密码学是一门专业，本人作为IT行业的从业者，断断续续与之打交道，深感之美；
-- 在广大无私分享者的指引与帮助下，我也积攒了部分经验，不敢私之，仅供来者参考；
+- 支持RSA(1024/2048)/AES(128/192/256)/SHA-1/SHA-256/SHA-512/SHA-3/MD5/PGP/HMAC-SHA256/HMAC-SHA512等国际通用的加密算法；
+- 支持SM2/SM3/SM4/HMAC-SM3等国密算法；
+- 还支持国密和国际加密算法的统一抽象与封装，并封装了国际/国密组合使用的一些实践；
+- 本加密组件引入方法：
+    ```xml
+    <dependency>
+        <groupId>com.biuqu</groupId>
+        <artifactId>bq-encryptor</artifactId>
+        <version>1.0.1</version>
+    </dependency>
+    ```
 
 ## 1. 为什么要写bq-encryptor加解密组件
 
 - 密码学原理较复杂，但是应用阶段，绝大部分时候是不需要关注原理的。而网上一大堆内容在介绍原理，对于实现仅寥寥几笔，容易让涉足者望而却步，我想做到原理和应用隔离，让有兴趣的人快速上手怎么应用加解密；
-- 加解密的使用场景相对简单，但是种类较多，网上资料碎片化比较严重，很难系统掌握；
-- 加解密其实共性较多，刚好本人在各种业务场景中基本上都有涉足，经过几年的心得体会，抽时间汇总了下简化使用的方法，有一定的避坑作用；
-- 国密加解密算法崛起(基本上按照国际规范自研了1套)，刚好按照抽象思维重构了整套加密算法，基本可以做到国密和国际加密算法的无缝切换；
-- 国密密改在政府、银行、金融保险行业有很高的安全诉求，在其他行业，也势在必行，但是大部分IT从业者可能并没有接触到，本加密组件也做了较好地模拟实现；
-
-## 2. 为什么要分享bq-encryptor加解密组件
-
-- 简化加解密的使用场景，期望帮助大家提升工作效率；
+- 随着国密加解密算法崛起(基本上按照国际规范自研了1套)，刚好可以按照抽象思维来实现2套加解密逻辑，有助于站在更高的位置、更好地理解各种加密算法的加解密特性；
+- 国密密改在政府、银行、金融保险行业有很高的安全诉求，在其他行业，也势在必行，此处也做了较好地模拟实现，以供参考；
 - 在Java世界里，当前使用最广泛的加解密组件莫过于BouncyCastle(澳大利亚非盈利组织)
-  了，毫无疑问，本加解密组件也是基于BouncyCastle做了二次封装，但是同时也屏蔽了其底层实现，期待着有一天我们也有自己的国产的更优实现；
-- 深感人生之渺茫，期待着在人类的璀璨星河里，有着我们轻描淡写的一笔；
+  了，本加解密组件也是基于BouncyCastle做了二次封装，但是同时也屏蔽了其底层实现，期待着有一天我们也有自己的国产的更优实现；
 
-## 3. 使用bq-encryptor加解密组件有什么好处
+## 2. 使用bq-encryptor加解密组件有什么好处
 
-- 如`4.2.1`分层设计的包名规划图所示，除了`加密算法`(`encryption`)外，其它的封装皆为`SpringBoot`准备，可以非常方便的注入其中，使用也及其简单；
+- 如`3.2.1`分层设计的包名规划图所示，除了`加密算法`(`XxxEncryption`)外，其它的封装皆为`SpringBoot`准备，可以非常方便的注入其中，使用也及其简单；
 	- 在SpringBoot yaml中配置如下：
   ```yaml
     bq:
@@ -194,13 +195,13 @@
 	- 接口认证数据加密
 	- 接口数据防篡改校验
 	- 接口数据加密
-  > 综上，上述业务场景的实现，会在本人后续的`SpringCloud微服务基础框架`中开源，敬请期待。
+  > 综上，上述业务场景的实现，本人会在后续的基于SpringCloud的`bq微服务基础框架`中开源。
 
-## 4. bq-encryptor加解密组件的使用说明
+## 3. bq-encryptor加解密组件的使用说明
 
-本节将从国际标准的加密分类、bq-encryptor加解密组件的分层、bq-encryptor加解密组件的使用、bq-encryptor加解密组件的实现依次予以介绍。
+本节将从国际标准的加密分类、加解密组件的分层、加解密组件的使用、加解密组件的实现依次予以介绍。
 
-### 4.1 加解密分类
+### 3.1 加解密分类
 
 |名称|全称|类型|`加密长度`|加密/工作模式/填充模式|签名算法|使用场景|典型案例|
 |---|---|---|---|---|---|---|---|
@@ -222,9 +223,9 @@
 > `加密长度`: 在加密算法中通常是指分段秘钥的长度，在摘要算法中通常是指内容块的长度；<br>
 > `补充说明`: 由于加密长度、填充模式、签名算法的不同，实际上会有非常多的组合使用方式，此处并没有一一列举，但组件基本上都已支持；
 
-### 4.2 bq-encryptor加解密组件的分层
+### 3.2 加解密组件的分层
 
-#### 4.2.1 分层整体设计
+#### 3.2.1 分层整体设计
 
          加密算法                      加密器                        加密机
      +-------------+             +-------------+             +-------------+
@@ -245,7 +246,7 @@
 
 - **在实际的业务场景中，基本上只会使用`加密机`(`hsm`)和`加密安全器`(`security`)2种模式，因为很少需要在运行过程中去生成秘钥。**
 
-#### 4.2.2 分层详细设计
+#### 3.2.2 分层详细设计
 
 - 按照加解密算法类型划分
 
@@ -393,9 +394,9 @@
 		- GmHsm解密就是对源报文生成的摘要做验签；
 	- UsHsm加密算法实现原理同上；
 
-### 4.3 bq-encryptor加解密组件的使用
+### 3.3 bq-encryptor加解密组件的使用
 
-- 使用`EncryptionFactory`构建`4.2.2`表中的任意算法实现类并使用加解密，如：
+- 使用`EncryptionFactory`构建`3.2.2`表中的任意算法实现类并使用加解密，如：
   ```java 
       Sm2Encryption sm2 = EncryptionFactory.SM2.createAlgorithm();
       SecureRandom random = sm2.createRandom(UUID.randomUUID().toString().getBytes(StandardCharsets.UTF_8));
@@ -410,7 +411,7 @@
       byte[] decryptBytes = sm2.decrypt(encryptBytes, priKey, null);
       System.out.println("Decrypt text=" + new String(decryptBytes, StandardCharsets.UTF_8));
   ```
-- 使用`EncryptorFactory`构建`4.2.2`表中任意算法对应的加密器并使用加解密，如：
+- 使用`EncryptorFactory`构建`3.2.2`表中任意算法对应的加密器并使用加解密，如：
   ```java   
       EncryptorKey sm2Key = new EncryptorKey();
       sm2Key.setAlgorithm(EncryptorFactory.SM2.getAlgorithm());
@@ -422,7 +423,7 @@
       byte[] decryptBytes = sm2Encryptor.decrypt(encryptBytes, null);
       System.out.println("Decrypt text=" + new String(decryptBytes, StandardCharsets.UTF_8));      
   ```
-- 使用`SecurityFacade`构建`4.2.2`表中任意算法对应的业务安全加密器并使用加解密，如：
+- 使用`SecurityFacade`构建`3.2.2`表中任意算法对应的业务安全加密器并使用加解密(亦可参见第`2`章的SpringBoot注入方式)，如：
   ```java   
       List<EncryptorKey> keys = new ArrayList<>(32);
       keys.add(sm2Key);
@@ -432,7 +433,7 @@
       String decryptText = securityFacade.signDecrypt(encryptText);
       System.out.println("Decrypt text=" + decryptText);        
   ```
-- 使用`HsmFacade`构建`4.2.2`表中任意算法对应的加密机并使用加解密，如：
+- 使用`HsmFacade`构建`3.2.2`表中任意算法对应的加密机并使用加解密(亦可参见第`2`章的SpringBoot注入方式)，如：
   ```java   
       List<EncryptorKey> keys = new ArrayList<>(32);
       keys.add(sm2Key);
@@ -443,11 +444,11 @@
       System.out.println("verify result=" + result);      
   ```  
 
-### 4.4 bq-encryptor加解密组件的实现
+### 3.4 bq-encryptor加解密组件的实现
 
-- 使用`EncryptionFactory`汇聚了所有加解密算法实现的使用；
-- 使用`EncryptorFactory`构建了所有加密器的使用(内置了加密算法和秘钥)；
-- 使用`SecurityFacade`构建了本地秘钥和安全要求不高的加解器的使用(除了内置加密算法和秘钥，还内置了一定的安全业务逻辑)；
-- 使用`HsmFacade`构建了安全极高的加解器的使用(除了内置加密算法和秘钥，且秘钥是单独硬件安全保存的，还内置了一定的安全业务逻辑)；
-- 使用`ClientSecurity`构建了本地秘钥和安全要求不高的加解器的使用(除了`SecurityFacade`的作用外，还可以根据客户指定不同的秘钥)，使得本地秘钥的使用极为方便;
+- `EncryptionFactory`汇聚了所有加解密算法的实现；
+- `EncryptorFactory`构建了所有加密器的实现(内置了加密算法和秘钥)；
+- `SecurityFacade`构建了本地秘钥和安全要求不高的加解器的实现(除了内置加密算法和秘钥，还内置了一定的安全业务逻辑)；
+- `HsmFacade`构建了安全极高的加密机的实现(除了内置加密算法和秘钥，且秘钥是无法被获取的，还内置了一定的安全业务逻辑)；
+- `ClientSecurity`构建了本地秘钥和安全要求不高的加密器的实现(除了`SecurityFacade`的作用外，还可以根据客户指定不同的秘钥);
 - 后续会基于各种加密算法分别详细分析与总结；

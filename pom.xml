@@ -73,6 +73,12 @@
                     <exclude>**/*.md</exclude>
                 </excludes>
             </resource>
+            <resource>
+                <directory>doc</directory>
+                <excludes>
+                    <exclude>**.md</exclude>
+                </excludes>
+            </resource>
         </resources>
         <plugins>
             <plugin>
