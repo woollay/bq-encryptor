@@ -4,7 +4,6 @@ import com.biuqu.encryption.BaseSingleSignature;
 import com.biuqu.encryption.exception.EncryptionException;
 import com.biuqu.encryption.model.RsaType;
 import org.apache.commons.io.IOUtils;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 import javax.crypto.Cipher;
 import java.io.ByteArrayOutputStream;
@@ -61,68 +60,6 @@ public class RsaEncryption extends BaseSingleSignature
     }
 
     /**
-     * 二进制加密
-     * 支持分段加密
-     *
-     * @param data 明文
-     * @param key  秘钥
-     * @return 密文
-     */
-    @Override
-    public byte[] encrypt(byte[] data, byte[] key, byte[] salt)
-    {
-        return doCipher(data, key, Cipher.ENCRYPT_MODE);
-    }
-
-    /**
-     * 二进制解密
-     * 支持分段解密
-     *
-     * @param data 密文
-     * @param key  秘钥
-     * @return 明文
-     */
-    @Override
-    public byte[] decrypt(byte[] data, byte[] key, byte[] salt)
-    {
-        return doCipher(data, key, Cipher.DECRYPT_MODE);
-    }
-
-    @Override
-    public byte[] sign(byte[] data, byte[] key)
-    {
-        try
-        {
-            PrivateKey priKey = this.toPriKey(key);
-            Signature signature = Signature.getInstance(this.getSignatureAlg(), BouncyCastleProvider.PROVIDER_NAME);
-            signature.initSign(priKey);
-            signature.update(data);
-            return signature.sign();
-        }
-        catch (Exception e)
-        {
-            throw new EncryptionException("failed to signature.", e);
-        }
-    }
-
-    @Override
-    public boolean verify(byte[] data, byte[] key, byte[] sign)
-    {
-        try
-        {
-            PublicKey pubKey = this.toPubKey(key);
-            Signature signature = Signature.getInstance(this.getSignatureAlg(), BouncyCastleProvider.PROVIDER_NAME);
-            signature.initVerify(pubKey);
-            signature.update(data);
-            return signature.verify(sign);
-        }
-        catch (Exception e)
-        {
-            throw new EncryptionException("failed to verify signature.", e);
-        }
-    }
-
-    /**
      * 获取公钥对象
      *
      * @param pubKey 公钥二进制
@@ -165,6 +102,68 @@ public class RsaEncryption extends BaseSingleSignature
     }
 
     /**
+     * 二进制加密
+     * 支持分段加密
+     *
+     * @param data 明文
+     * @param key  秘钥
+     * @return 密文
+     */
+    @Override
+    public byte[] encrypt(byte[] data, byte[] key, byte[] salt)
+    {
+        return doCipher(data, key, Cipher.ENCRYPT_MODE);
+    }
+
+    /**
+     * 二进制解密
+     * 支持分段解密
+     *
+     * @param data 密文
+     * @param key  秘钥
+     * @return 明文
+     */
+    @Override
+    public byte[] decrypt(byte[] data, byte[] key, byte[] salt)
+    {
+        return doCipher(data, key, Cipher.DECRYPT_MODE);
+    }
+
+    @Override
+    public byte[] sign(byte[] data, byte[] key)
+    {
+        try
+        {
+            PrivateKey priKey = this.toPriKey(key);
+            Signature signature = Signature.getInstance(this.getSignatureAlg(), this.getProvider());
+            signature.initSign(priKey);
+            signature.update(data);
+            return signature.sign();
+        }
+        catch (Exception e)
+        {
+            throw new EncryptionException("failed to signature.", e);
+        }
+    }
+
+    @Override
+    public boolean verify(byte[] data, byte[] key, byte[] sign)
+    {
+        try
+        {
+            PublicKey pubKey = this.toPubKey(key);
+            Signature signature = Signature.getInstance(this.getSignatureAlg(), this.getProvider());
+            signature.initVerify(pubKey);
+            signature.update(data);
+            return signature.verify(sign);
+        }
+        catch (Exception e)
+        {
+            throw new EncryptionException("failed to verify signature.", e);
+        }
+    }
+
+    /**
      * 抽象加解密
      *
      * @param data       明文/密文
@@ -196,7 +195,7 @@ public class RsaEncryption extends BaseSingleSignature
             cipher.init(cipherMode, algKey);
 
             //4.根据RSA类型获取每次处理报文的最大字节数
-            int maxLen = this.rsaType.getDecryptLen();
+            int maxLen = this.rsaType.getDecryptLen(this.getPaddingMode());
             if (cipherMode == Cipher.DECRYPT_MODE)
             {
                 maxLen = this.rsaType.getEncryptLen();
@@ -209,7 +208,7 @@ public class RsaEncryption extends BaseSingleSignature
                 //5.1获取每次的起始位置
                 int limit = start + maxLen;
                 limit = Math.min(limit, data.length);
-
+                
                 //5.2分段加解密后，把该段报文写入缓存
                 byte[] partData = cipher.doFinal(data, start, limit - start);
                 out.write(partData, 0, partData.length);

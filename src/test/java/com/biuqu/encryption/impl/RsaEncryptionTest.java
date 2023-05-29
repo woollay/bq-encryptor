@@ -1,6 +1,8 @@
 package com.biuqu.encryption.impl;
 
 import com.biuqu.encryption.BaseSingleSignature;
+import com.biuqu.encryption.BaseSingleSignatureTest;
+import org.apache.commons.lang3.RandomUtils;
 import org.bouncycastle.util.encoders.Hex;
 import org.junit.Assert;
 import org.junit.Test;
@@ -9,9 +11,56 @@ import java.nio.charset.StandardCharsets;
 import java.security.KeyPair;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
-public class RsaEncryptionTest
+public class RsaEncryptionTest extends BaseSingleSignatureTest
 {
+    @Override
+    protected BaseSingleSignature createAlgorithm()
+    {
+        return new RsaEncryption();
+    }
+
+    @Test
+    public void encrypt()
+    {
+        int[] encLengths = {1024, 2048, 3072, 4096};
+        List<String> paddings = new ArrayList<>();
+        paddings.add("RSA/NONE/NoPadding");
+        paddings.add("RSA/ECB/OAEPPadding");
+        paddings.add("RSA/ECB/PKCS1Padding");
+        paddings.add("RSA/ECB/NoPadding");
+        //公钥加密
+        super.encrypt(encLengths, paddings);
+        //私钥加密
+        super.encrypt(encLengths, paddings, false);
+    }
+
+    @Test
+    public void testEncryptAndSign()
+    {
+        String initKey = UUID.randomUUID() + new String(RandomUtils.nextBytes(5000), StandardCharsets.UTF_8);
+
+        int[] encLengths = {1024, 2048, 3072, 4096};
+        List<String> paddings = new ArrayList<>();
+        paddings.add("RSA/ECB/OAEPPadding");
+        paddings.add("RSA/ECB/PKCS1Padding");
+
+        BaseSingleSignature encryption = new RsaEncryption();
+
+        for (String padding : paddings)
+        {
+            encryption.setPaddingMode(padding);
+            for (int encLen : encLengths)
+            {
+                encryption.setEncryptLen(encLen);
+                KeyPair keyPair = encryption.createKey(initKey.getBytes(StandardCharsets.UTF_8));
+                super.testEncryptAndSign(encryption, keyPair.getPrivate().getEncoded(),
+                    keyPair.getPublic().getEncoded());
+            }
+        }
+    }
+
     @Test
     public void signature()
     {
@@ -37,27 +86,8 @@ public class RsaEncryptionTest
     @Test
     public void createKey()
     {
-        String initKey = "test RSA with initial key.";
         BaseSingleSignature encryption = new RsaEncryption();
-        KeyPair keyPair = encryption.createKey(initKey.getBytes(StandardCharsets.UTF_8));
-
-        byte[] priKey = keyPair.getPrivate().getEncoded();
-        byte[] pubKey = keyPair.getPublic().getEncoded();
-
-        String text = "test-RSA-with-text.";
-        String text2 = text + text + text + text + text + text + text + text;
-        text2 += text2;
-        text2 += text2;
-        text2 += text2;
-
-        List<String> texts = new ArrayList<>();
-        texts.add(text);
-        texts.add(text2);
-        for (String txt : texts)
-        {
-            byte[] enText = encryption.encrypt(txt.getBytes(StandardCharsets.UTF_8), priKey, null);
-            byte[] deText = encryption.decrypt(enText, pubKey, null);
-            System.out.println("text len:" + txt.length() + ",decryption text:" + new String(deText));
-        }
+        int[] encLengths = {1024, 2048, 3072, 4096};
+        super.createKey(encryption, encLengths);
     }
 }

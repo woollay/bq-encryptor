@@ -1,6 +1,11 @@
 package com.biuqu.encryption.model;
 
 import com.biuqu.encryption.constants.EncryptionConst;
+import org.apache.commons.lang3.StringUtils;
+
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
 
 /**
  * 支持的RSA类型
@@ -18,7 +23,17 @@ public enum RsaType
     /**
      * RSA 2048位
      */
-    RSA_2048(2048);
+    RSA_2048(2048),
+
+    /**
+     * RSA 3072位
+     */
+    RSA_3072(3072),
+
+    /**
+     * RSA 4096位
+     */
+    RSA_4096(4096);
 
     /**
      * 根据加密算法长度获取RSA类型
@@ -103,13 +118,28 @@ public enum RsaType
     /**
      * 获取明文块长度(单次加密时能够支持的最大byte长度)
      * <p>
-     * 因为明文块最大为${AlgLen}/8，但是又需要有11byte的填充控制符，所以每次实际只能针对${AlgLen}/8-11的字符长度加密
+     * 以PKCS1填充算法为例：
+     * 因为明文块最大为${AlgLen}/8，但是又需要有11byte的填充符，所以每次实际只能针对${AlgLen}/8-11的字符长度加密
      *
+     * @param algorithm 非对称加密算法(带填充模式)
      * @return 明文块长度
      */
-    public int getDecryptLen()
+    public int getDecryptLen(String algorithm)
     {
-        return this.getEncryptLen() - PADDING_LEN;
+        //默认是NoPadding
+        int paddingLen = 0;
+        if (!StringUtils.isEmpty(algorithm))
+        {
+            for (String padding : PADDING_MAP.keySet())
+            {
+                if (algorithm.toUpperCase(Locale.ROOT).endsWith(padding.toUpperCase(Locale.ROOT)))
+                {
+                    paddingLen = PADDING_MAP.get(padding);
+                    break;
+                }
+            }
+        }
+        return this.getEncryptLen() - paddingLen;
     }
 
     /**
@@ -138,12 +168,29 @@ public enum RsaType
     private int len;
 
     /**
+     * RSA的OAEP填充算法的填充标记占位为42byte
+     */
+    private static final int OAEP_PADDING_LEN = 42;
+
+    /**
      * RSA默认的PKCS1填充算法的填充标记占位为11byte
      */
-    private static final int PADDING_LEN = 11;
+    private static final int PKCS1_PADDING_LEN = 11;
 
     /**
      * 私钥长度占加密算法长度的50%以上
      */
     private static final int PRI_RATIO = 2;
+
+    /**
+     * 填充算法对应的长度关系
+     */
+    private static final Map<String, Integer> PADDING_MAP = new HashMap<>();
+
+    static
+    {
+        PADDING_MAP.put("/NoPadding", 0);
+        PADDING_MAP.put("/OAEPPadding", OAEP_PADDING_LEN);
+        PADDING_MAP.put("/PKCS1Padding", PKCS1_PADDING_LEN);
+    }
 }

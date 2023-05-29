@@ -1,6 +1,8 @@
 package com.biuqu.encryption.impl;
 
 import com.biuqu.encryption.BaseSingleSignature;
+import com.biuqu.encryption.BaseSingleSignatureTest;
+import org.apache.commons.lang3.RandomUtils;
 import org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPrivateKey;
 import org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPublicKey;
 import org.bouncycastle.util.encoders.Hex;
@@ -9,14 +11,39 @@ import org.junit.Test;
 
 import java.nio.charset.StandardCharsets;
 import java.security.KeyPair;
-import java.util.Arrays;
 import java.util.UUID;
 
-public class Sm2EncryptionTest
+public class Sm2EncryptionTest extends BaseSingleSignatureTest
 {
+    @Override
+    protected BaseSingleSignature createAlgorithm()
+    {
+        return new Sm2Encryption();
+    }
 
     @Test
     public void encrypt()
+    {
+        int[] encLengths = {256};
+        super.encrypt(encLengths);
+    }
+
+    @Test
+    public void testEncryptAndSign()
+    {
+        String initKey = UUID.randomUUID() + new String(RandomUtils.nextBytes(5000), StandardCharsets.UTF_8);
+        int[] encLengths = {256};
+        BaseSingleSignature encryption = new Sm2Encryption();
+        for (int encLen : encLengths)
+        {
+            encryption.setEncryptLen(encLen);
+            KeyPair keyPair = encryption.createKey(initKey.getBytes(StandardCharsets.UTF_8));
+            super.testEncryptAndSign(encryption, keyPair.getPrivate().getEncoded(), keyPair.getPublic().getEncoded());
+        }
+    }
+
+    @Test
+    public void encrypt5()
     {
         String text = "testTextAbc`123";
         BaseSingleSignature sm2 = new Sm2Encryption();
@@ -107,10 +134,9 @@ public class Sm2EncryptionTest
     @Test
     public void createKey()
     {
-        BaseSingleSignature sm2 = new Sm2Encryption();
-        KeyPair keyPair = sm2.createKey("test123".getBytes(StandardCharsets.UTF_8));
-        System.out.println("priKey=" + Arrays.toString(keyPair.getPrivate().getEncoded()));
-        System.out.println("pubKey=" + Arrays.toString(keyPair.getPublic().getEncoded()));
+        BaseSingleSignature encryption = new Sm2Encryption();
+        int[] encLengths = {256};
+        super.createKey(encryption, encLengths);
     }
 
     @Test

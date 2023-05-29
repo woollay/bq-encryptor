@@ -34,7 +34,6 @@ import java.util.UUID;
  */
 public class Sm2Encryption extends BaseSingleSignature
 {
-
     /**
      * 构造方法，设置了加密算法的主要参数，还可以通过setter方法设置或者更新
      */
