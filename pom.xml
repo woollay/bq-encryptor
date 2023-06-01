@@ -12,7 +12,6 @@
     </parent>
 
     <artifactId>bq-encryptor</artifactId>
-    <version>1.0.2</version>
 
     <name>bq-encryptor</name>
     <description>easy use for mostly encryption</description>
