@@ -8,7 +8,7 @@
     <parent>
         <groupId>com.biuqu</groupId>
         <artifactId>bq-parent</artifactId>
-        <version>1.0.2</version>
+        <version>1.0.3</version>
     </parent>
 
     <artifactId>bq-encryptor</artifactId>
@@ -71,7 +71,7 @@
             <resource>
                 <directory>doc</directory>
                 <excludes>
-                    <exclude>**.md</exclude>
+                    <exclude>**.*</exclude>
                 </excludes>
             </resource>
         </resources>
