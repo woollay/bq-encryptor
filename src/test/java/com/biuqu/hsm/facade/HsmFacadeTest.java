@@ -23,6 +23,32 @@ import java.util.UUID;
 
 public class HsmFacadeTest
 {
+    @Test
+    public void testJasyptKey()
+    {
+        String hsmKey = "e9c9ba0326f00c39254ee7675907514a";
+        String jasyptKey = "f056513b001bda32d80d1c6da4e59e0e";
+        List<EncryptorKey> keys = new ArrayList<>(32);
+        EncryptorKey sm4Key = new EncryptorKey();
+        sm4Key.setPri(hsmKey);
+        sm4Key.setAlgorithm(EncryptorFactory.SM4Hsm.getAlgorithm());
+        keys.add(sm4Key);
+
+        EncryptorKeys encKeys = new EncryptorKeys();
+        encKeys.setGm(true);
+        encKeys.setKeys(keys);
+        HsmFacade hsm = new HsmFacade(encKeys);
+
+        //1.对jasypt秘钥加密验证
+        String encJasyptKey = hsm.encrypt(jasyptKey);
+        System.out.println("jasypt dec key:" + jasyptKey + ",enc key:" + encJasyptKey);
+
+        //2.对jasypt秘钥解密验证
+        String encJasyptKey2 =
+            "d83b8495e866cece729a3666714369d4da2ebc303cf87115913d755ee842d3b4cdc1ac34e9d57ca9f3a51306984260d4";
+        String decData2 = hsm.decrypt(encJasyptKey2);
+        System.out.println("jasypt enc key:" + encJasyptKey2 + ",dec key:" + decData2);
+    }
 
     @Test
     public void getEncryptHsm()
